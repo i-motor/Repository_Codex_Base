@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Radiales Segmentnetz</title>
+<style>
+:root {
+  color-scheme: light;
+}
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background: #ffffff;
+  color: #222222;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+header {
+  padding: 12px;
+  background: #f0f0f0;
+  border-bottom: 1px solid #d0d0d0;
+}
+main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(260px, 360px) 1fr;
+  gap: 12px;
+  padding: 12px;
+  box-sizing: border-box;
+}
+textarea {
+  width: 100%;
+  min-height: 300px;
+  resize: vertical;
+  font-family: monospace;
+  font-size: 13px;
+  padding: 8px;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+#controls {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+button {
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  border: 1px solid #aaaaaa;
+  border-radius: 4px;
+  background: #fafafa;
+}
+#chart {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+#message {
+  min-height: 1.5em;
+  font-size: 14px;
+  color: #cc0000;
+  margin-top: 6px;
+}
+svg {
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  user-select: none;
+}
+.node-segment {
+  fill: #f5f5f5;
+  stroke: #dddddd;
+  stroke-width: 1;
+  transition: fill 0.15s ease, opacity 0.15s ease;
+}
+.node-label {
+  fill: #000000;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+.dimmed {
+  opacity: 0.15;
+}
+.highlighted {
+  opacity: 1;
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Radiales Segmentnetz (Sunburst-Netz)</h1>
+  <p>Bearbeite die CSV-Daten und zeichne das Netz neu.</p>
+</header>
+<main>
+  <section>
+    <label for="data"><strong>CSV-Daten</strong></label>
+    <textarea id="data">knoten_name,knoten_id,segment,connected_id1,connected_id2,...
+
+# Nahrung und Verzweigungen
+Nahrung,NAHRUNG,0,OBST,GEMUESE,WACHSTUMSORT
+Wachstumsort,WACHSTUMSORT,1,NAHRUNG,BAUMFRUCHT,STRAUCHFRUCHT,BODENFRUCHT,BLATTPFLANZE,SUEDHAIN
+Obst,OBST,1,NAHRUNG,BAUMFRUCHT,STRAUCHFRUCHT,ZITRUSFRUCHT,KERNFRUCHT
+Gemuese,GEMUESE,1,NAHRUNG,BODENFRUCHT,BLATTPFLANZE,FRUCHTGEMUESE,KNOLLE
+
+# Kategorien nach Wachstumsort und Fruchtkörper
+Baumfrucht,BAUMFRUCHT,2,WACHSTUMSORT,OBST,APFEL,BIRNE,KIRSCHE
+Strauchfrucht,STRAUCHFRUCHT,2,WACHSTUMSORT,OBST,ERDBEERE,JOHANNISBEERE,PAPRIKA,TOMATE
+Zitrusfrucht,ZITRUSFRUCHT,2,OBST,SUEDHAIN,ORANGE,ZITRONE
+Kernfrucht,KERNFRUCHT,2,OBST,APFEL,BIRNE
+Bodenfrucht,BODENFRUCHT,2,WACHSTUMSORT,GEMUESE,KAROTTE,KARTOFFEL,RUEBE
+Blattpflanze,BLATTPFLANZE,2,WACHSTUMSORT,GEMUESE,SPINAT,SALAT
+Fruchtgemuese,FRUCHTGEMUESE,2,GEMUESE,STRAUCHFRUCHT,PAPRIKA,TOMATE
+Knolle,KNOLLE,2,GEMUESE,BODENFRUCHT,KARTOFFEL,RUEBE
+Suedhain,SUEDHAIN,2,WACHSTUMSORT,ZITRUSFRUCHT,ORANGE,ZITRONE
+
+# Einzelne Früchte und Gemüse
+Apfel,APFEL,3,BAUMFRUCHT,KERNFRUCHT
+Birne,BIRNE,3,BAUMFRUCHT,KERNFRUCHT
+Kirsche,KIRSCHE,3,BAUMFRUCHT
+Orange,ORANGE,3,ZITRUSFRUCHT,SUEDHAIN
+Zitrone,ZITRONE,3,ZITRUSFRUCHT,SUEDHAIN
+Erdbeere,ERDBEERE,3,STRAUCHFRUCHT
+Johannisbeere,JOHANNISBEERE,3,STRAUCHFRUCHT
+Paprika,PAPRIKA,3,FRUCHTGEMUESE,STRAUCHFRUCHT
+Tomate,TOMATE,3,FRUCHTGEMUESE,STRAUCHFRUCHT
+Karotte,KAROTTE,3,BODENFRUCHT,KNOLLE
+Kartoffel,KARTOFFEL,3,BODENFRUCHT,KNOLLE
+Ruebe,RUEBE,3,BODENFRUCHT,KNOLLE
+Spinat,SPINAT,3,BLATTPFLANZE
+Salat,SALAT,3,BLATTPFLANZE
+</textarea>
+    <div id="controls">
+      <button id="rerender">Neu zeichnen</button>
+    </div>
+    <div id="message" role="status" aria-live="polite"></div>
+  </section>
+  <section id="chart"></section>
+</main>
+<script>
+const COLORS = {
+  baseFill: '#f5f5f5',
+  baseStroke: '#dddddd',
+  highlight: '#ff9800',
+  background: '#ffffff',
+  dimmedOpacity: 0.15
+};
+const HIGHLIGHT_OPACITY_BY_LEVEL = [1.0, 0.7, 0.45, 0.25, 0.12];
+const STROKE_WIDTH = 1;
+const DEGREE_FONT_MIN = 6;
+const DEGREE_FONT_MAX = 37;
+const DEGREE_FONT_BASE = 6;
+const DEGREE_FONT_PEAK = 37;
+const RESIZE_DEBOUNCE = 150;
+const MARGIN = 8;
+
+const dataTextarea = document.getElementById('data');
+const chartContainer = document.getElementById('chart');
+const messageBox = document.getElementById('message');
+const rerenderButton = document.getElementById('rerender');
+
+let svgElement = null;
+let nodeGeometries = new Map();
+let nodeIndex = new Map();
+let adjacency = new Map();
+let zoomState = { scale: 1, min: 0.5, max: 4, viewBoxSize: 0, originX: 0, originY: 0 };
+let panState = { dragging: false, lastX: 0, lastY: 0 };
+let resizeTimer = null;
+
+function parseCSV(text) {
+  const lines = text.split(/\r?\n/);
+  const nodes = new Map();
+  const duplicates = new Set();
+  const referencedIds = new Set();
+  let headerSkipped = false;
+  let lineNumber = 0;
+
+  for (const rawLine of lines) {
+    lineNumber += 1;
+    const line = rawLine.trim();
+    if (!line || line.startsWith('#')) {
+      continue;
+    }
+    const parts = line.split(',').map(part => part.trim());
+    if (!headerSkipped && parts[0]?.toLowerCase() === 'knoten_name') {
+      headerSkipped = true;
+      continue;
+    }
+    headerSkipped = true;
+    if (parts.length < 3) {
+      return { error: `Zu wenig Spalten in Zeile ${lineNumber}: "${rawLine}"` };
+    }
+    const name = parts[0] || '';
+    const id = parts[1];
+    const segmentRaw = parts[2];
+    if (!id) {
+      return { error: `Fehlende ID in Zeile ${lineNumber}` };
+    }
+    if (segmentRaw === undefined || segmentRaw === '') {
+      return { error: `Fehlende Segmentnummer für ID ${id}` };
+    }
+    const segment = Number(segmentRaw);
+    if (!Number.isInteger(segment) || segment < 0) {
+      return { error: `Ungültige Segmentnummer für ID ${id}: ${segmentRaw}` };
+    }
+    if (nodes.has(id)) {
+      duplicates.add(id);
+      continue;
+    }
+    const connections = new Set();
+    for (let i = 3; i < parts.length; i += 1) {
+      const ref = parts[i];
+      if (ref) {
+        connections.add(ref);
+        referencedIds.add(ref);
+      }
+    }
+    nodes.set(id, { id, name: name || id, level: segment, connections });
+  }
+
+  if (duplicates.size > 0) {
+    return { error: `Doppelte IDs gefunden: ${Array.from(duplicates).join(', ')}` };
+  }
+
+  for (const refId of referencedIds) {
+    if (!nodes.has(refId)) {
+      return { error: `Unbekannte ID referenziert: ${refId}` };
+    }
+  }
+
+  const adj = new Map();
+  for (const [id, node] of nodes.entries()) {
+    if (!adj.has(id)) adj.set(id, new Set());
+    for (const ref of node.connections) {
+      if (!adj.has(ref)) adj.set(ref, new Set());
+      adj.get(id).add(ref);
+      adj.get(ref).add(id);
+    }
+  }
+
+  for (const [id, neighbors] of adj.entries()) {
+    adj.set(id, new Set(neighbors));
+  }
+
+  let degMax = 0;
+  let degMin = Infinity;
+  for (const node of nodes.values()) {
+    const neighbors = adj.get(node.id) || new Set();
+    const degree = neighbors.size;
+    node.degree = degree;
+    if (degree > degMax) degMax = degree;
+    if (degree < degMin) degMin = degree;
+  }
+  if (nodes.size === 0) {
+    degMin = 0;
+  } else if (degMin === Infinity) {
+    degMin = 0;
+  }
+  return { nodes, adjacency: adj, degMax, degMin };
+}
+
+function compareByDegreeNameId(a, b) {
+  if (b.degree !== a.degree) return b.degree - a.degree;
+  const nameCmp = a.name.localeCompare(b.name, 'de-DE');
+  if (nameCmp !== 0) return nameCmp;
+  return a.id.localeCompare(b.id, 'de-DE');
+}
+
+function compareLevelZero(a, b) {
+  const nameCmp = a.name.localeCompare(b.name, 'de-DE');
+  if (nameCmp !== 0) return nameCmp;
+  return a.id.localeCompare(b.id, 'de-DE');
+}
+
+function distributeAngles(nodesList, totalAngleDeg, startAngleDeg) {
+  if (!nodesList.length) return;
+  const degreeSum = nodesList.reduce((sum, node) => sum + node.degree, 0);
+  const useDegrees = degreeSum > 0;
+  const base = useDegrees
+    ? totalAngleDeg / degreeSum
+    : totalAngleDeg / nodesList.length;
+  let used = 0;
+  for (let index = 0; index < nodesList.length; index += 1) {
+    const node = nodesList[index];
+    let span = useDegrees ? base * node.degree : base;
+    if (index === nodesList.length - 1) {
+      span = Math.max(totalAngleDeg - used, 0);
+    } else if (span < 0) {
+      span = 0;
+    }
+    node.startAngleDeg = startAngleDeg + used;
+    node.angleDeg = span;
+    node.endAngleDeg = node.startAngleDeg + span;
+    used += span;
+  }
+}
+
+function selectParentForNode(node, nodes, adj) {
+  const neighbors = Array.from(adj.get(node.id) || []);
+  const candidates = neighbors
+    .map(id => nodes.get(id))
+    .filter(neighbor => neighbor && neighbor.level === node.level - 1);
+  if (!candidates.length) {
+    return null;
+  }
+  candidates.sort(compareByDegreeNameId);
+  return candidates[0];
+}
+
+function degreesToRadians(value) {
+  return (value * Math.PI) / 180;
+}
+
+function layoutBySegments(nodes, adj) {
+  const nodesByLevel = new Map();
+  let maxLevel = 0;
+  for (const node of nodes.values()) {
+    if (!nodesByLevel.has(node.level)) {
+      nodesByLevel.set(node.level, []);
+    }
+    nodesByLevel.get(node.level).push(node);
+    if (node.level > maxLevel) {
+      maxLevel = node.level;
+    }
+  }
+
+  const levelZero = nodesByLevel.get(0) || [];
+  if (!levelZero.length) {
+    return { error: 'Segment 0 enthält keine Knoten.' };
+  }
+
+  const sortedLevelZero = [...levelZero].sort(compareLevelZero);
+  distributeAngles(sortedLevelZero, 360, -90);
+
+  for (let level = 1; level <= maxLevel; level += 1) {
+    const currentLevelNodes = nodesByLevel.get(level) || [];
+    if (!currentLevelNodes.length) {
+      continue;
+    }
+    const groupedByParent = new Map();
+    for (const node of currentLevelNodes) {
+      const parent = selectParentForNode(node, nodes, adj);
+      if (!parent) {
+        return { error: `Knoten ${node.name} (${node.id}) besitzt keinen Nachbarn im Segment ${level - 1}` };
+      }
+      node.parentId = parent.id;
+      if (!groupedByParent.has(parent.id)) {
+        groupedByParent.set(parent.id, []);
+      }
+      groupedByParent.get(parent.id).push(node);
+    }
+
+    for (const [parentId, children] of groupedByParent.entries()) {
+      const parent = nodes.get(parentId);
+      if (parent.startAngleDeg === undefined || parent.angleDeg === undefined) {
+        return { error: `Winkel fehlen für Elternknoten ${parent.name} (${parent.id}).` };
+      }
+      const sortedChildren = [...children].sort(compareByDegreeNameId);
+      distributeAngles(sortedChildren, parent.angleDeg, parent.startAngleDeg);
+    }
+  }
+
+  for (const node of nodes.values()) {
+    const startDeg = node.startAngleDeg;
+    const angleDeg = node.angleDeg;
+    if (startDeg === undefined || angleDeg === undefined) {
+      return { error: `Winkel konnten für Knoten ${node.name} (${node.id}) nicht berechnet werden.` };
+    }
+    node.startAngle = degreesToRadians(startDeg);
+    node.endAngle = degreesToRadians(startDeg + angleDeg);
+  }
+
+  return { maxLevel };
+}
+
+function polarToCartesian(radius, angle) {
+  return {
+    x: radius * Math.cos(angle),
+    y: radius * Math.sin(angle)
+  };
+}
+
+function describeArc(innerR, outerR, startAngle, endAngle) {
+  const startOuter = polarToCartesian(outerR, startAngle);
+  const endOuter = polarToCartesian(outerR, endAngle);
+  const startInner = polarToCartesian(innerR, endAngle);
+  const endInner = polarToCartesian(innerR, startAngle);
+  const largeArcFlag = endAngle - startAngle <= Math.PI ? '0' : '1';
+  const path = [
+    `M ${startOuter.x} ${startOuter.y}`,
+    `A ${outerR} ${outerR} 0 ${largeArcFlag} 1 ${endOuter.x} ${endOuter.y}`,
+    `L ${startInner.x} ${startInner.y}`,
+    `A ${innerR} ${innerR} 0 ${largeArcFlag} 0 ${endInner.x} ${endInner.y}`,
+    'Z'
+  ];
+  return path.join(' ');
+}
+
+function computeFontSize(degree, degMin, degMax) {
+  if (degMax === degMin) {
+    return 22;
+  }
+  const ratio = (degree - degMin) / (degMax - degMin);
+  const value = DEGREE_FONT_BASE + ratio * (DEGREE_FONT_PEAK - DEGREE_FONT_BASE);
+  return Math.max(DEGREE_FONT_MIN, Math.min(DEGREE_FONT_MAX, Math.round(value)));
+}
+
+function createSVG(width, height) {
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('xmlns', svgNS);
+  svg.setAttribute('viewBox', `${-width / 2} ${-height / 2} ${width} ${height}`);
+  svg.style.background = COLORS.background;
+  svgElement = svg;
+  zoomState.viewBoxSize = Math.min(width, height);
+  zoomState.scale = 1;
+  zoomState.originX = -width / 2;
+  zoomState.originY = -height / 2;
+  svg.addEventListener('wheel', onWheel, { passive: false });
+  svg.addEventListener('mousedown', onPointerDown);
+  window.addEventListener('mousemove', onPointerMove);
+  window.addEventListener('mouseup', onPointerUp);
+  svg.addEventListener('mouseleave', () => applyHighlight(null));
+  return svg;
+}
+
+function renderChart() {
+  clearChart();
+  const parsed = parseCSV(dataTextarea.value);
+  if (parsed.error) {
+    messageBox.textContent = parsed.error;
+    renderEmptyFrame();
+    return;
+  }
+  const { nodes, adjacency: adj, degMax, degMin } = parsed;
+  if (!nodes || nodes.size === 0) {
+    messageBox.textContent = 'Keine gültigen Verbindungen';
+    renderEmptyFrame();
+    return;
+  }
+  if (degMax === 0) {
+    messageBox.textContent = 'Keine gültigen Verbindungen';
+    renderEmptyFrame();
+    return;
+  }
+  messageBox.textContent = '';
+  adjacency = adj;
+  const layoutResult = layoutBySegments(nodes, adj);
+  if (layoutResult.error) {
+    messageBox.textContent = layoutResult.error;
+    renderEmptyFrame();
+    return;
+  }
+  const { maxLevel } = layoutResult;
+  nodeIndex = nodes;
+
+  const rect = chartContainer.getBoundingClientRect();
+  const width = rect.width || 600;
+  const height = rect.height || 600;
+  const ringWidth = Math.floor((Math.min(width, height) / 2 - MARGIN) / (maxLevel + 1)) || 1;
+  const svg = createSVG(width, height);
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const segmentsGroup = document.createElementNS(svgNS, 'g');
+  const labelsGroup = document.createElementNS(svgNS, 'g');
+  segmentsGroup.setAttribute('class', 'segments');
+  labelsGroup.setAttribute('class', 'labels');
+
+  nodeGeometries = new Map();
+  for (const node of nodes.values()) {
+    const innerR = node.level * ringWidth;
+    const outerR = innerR + ringWidth;
+    const pathData = describeArc(innerR, outerR, node.startAngle, node.endAngle);
+    const path = document.createElementNS(svgNS, 'path');
+    path.setAttribute('d', pathData);
+    path.setAttribute('fill', COLORS.baseFill);
+    path.setAttribute('stroke', COLORS.baseStroke);
+    path.setAttribute('stroke-width', STROKE_WIDTH);
+    path.setAttribute('class', 'node-segment');
+    path.dataset.nodeId = node.id;
+    path.addEventListener('mouseenter', () => applyHighlight(node.id));
+    path.addEventListener('mouseleave', () => applyHighlight(null));
+    segmentsGroup.appendChild(path);
+
+    const centerRadius = innerR + ringWidth / 2;
+    const middleAngle = (node.startAngle + node.endAngle) / 2;
+    const center = polarToCartesian(centerRadius, middleAngle);
+    const text = document.createElementNS(svgNS, 'text');
+    text.textContent = node.name;
+    text.setAttribute('x', center.x.toFixed(2));
+    text.setAttribute('y', center.y.toFixed(2));
+    text.setAttribute('class', 'node-label');
+    text.setAttribute('font-size', computeFontSize(node.degree, degMin, degMax));
+    labelsGroup.appendChild(text);
+
+    nodeGeometries.set(node.id, { path, text, level: node.level });
+  }
+
+  svg.appendChild(segmentsGroup);
+  svg.appendChild(labelsGroup);
+  chartContainer.appendChild(svg);
+  applyHighlight(null);
+}
+
+function renderEmptyFrame() {
+  clearChart();
+  const rect = chartContainer.getBoundingClientRect();
+  const width = rect.width || 600;
+  const height = rect.height || 600;
+  const svg = createSVG(width, height);
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const text = document.createElementNS(svgNS, 'text');
+  text.textContent = 'Keine gültigen Verbindungen';
+  text.setAttribute('class', 'node-label');
+  text.setAttribute('font-size', '18');
+  text.setAttribute('x', '0');
+  text.setAttribute('y', '0');
+  svg.appendChild(text);
+  chartContainer.appendChild(svg);
+}
+
+function clearChart() {
+  chartContainer.innerHTML = '';
+  nodeGeometries = new Map();
+  nodeIndex = new Map();
+  adjacency = new Map();
+  svgElement = null;
+}
+
+function applyHighlight(nodeId) {
+  if (!nodeId) {
+    for (const { path, text } of nodeGeometries.values()) {
+      path.style.fill = COLORS.baseFill;
+      path.style.opacity = 1;
+      text.style.opacity = 1;
+    }
+    return;
+  }
+  const component = getComponent(nodeId);
+  const highlightSet = new Set(component);
+  for (const [id, geom] of nodeGeometries.entries()) {
+    const { path, text, level } = geom;
+    if (highlightSet.has(id)) {
+      const opacity = HIGHLIGHT_OPACITY_BY_LEVEL[Math.min(level, HIGHLIGHT_OPACITY_BY_LEVEL.length - 1)];
+      path.style.fill = COLORS.highlight;
+      path.style.opacity = opacity;
+      text.style.opacity = 1;
+    } else {
+      path.style.fill = COLORS.baseFill;
+      path.style.opacity = COLORS.dimmedOpacity;
+      text.style.opacity = COLORS.dimmedOpacity;
+    }
+  }
+}
+
+function getComponent(startId) {
+  const visited = new Set();
+  const queue = [startId];
+  visited.add(startId);
+  while (queue.length) {
+    const current = queue.shift();
+    const neighbors = adjacency.get(current) || new Set();
+    for (const neighbor of neighbors) {
+      if (visited.has(neighbor)) continue;
+      visited.add(neighbor);
+      queue.push(neighbor);
+    }
+  }
+  return visited;
+}
+
+function screenToSVG(svg, clientX, clientY) {
+  const pt = svg.createSVGPoint();
+  pt.x = clientX;
+  pt.y = clientY;
+  const ctm = svg.getScreenCTM();
+  if (!ctm) return { x: 0, y: 0 };
+  const inverse = ctm.inverse();
+  const svgPoint = pt.matrixTransform(inverse);
+  return { x: svgPoint.x, y: svgPoint.y };
+}
+
+function onWheel(event) {
+  event.preventDefault();
+  if (!svgElement) return;
+  const { min, max } = zoomState;
+  const delta = event.deltaY < 0 ? 1.1 : 0.9;
+  const newScale = Math.min(max, Math.max(min, zoomState.scale * delta));
+  const svgPoint = screenToSVG(svgElement, event.clientX, event.clientY);
+  const viewBox = svgElement.viewBox.baseVal;
+  const zoomRatio = zoomState.scale / newScale;
+  const width = viewBox.width * zoomRatio;
+  const height = viewBox.height * zoomRatio;
+  viewBox.x = svgPoint.x - (svgPoint.x - viewBox.x) * zoomRatio;
+  viewBox.y = svgPoint.y - (svgPoint.y - viewBox.y) * zoomRatio;
+  viewBox.width = width;
+  viewBox.height = height;
+  zoomState.scale = newScale;
+}
+
+function onPointerDown(event) {
+  if (!svgElement || event.button !== 0) return;
+  panState.dragging = true;
+  panState.lastX = event.clientX;
+  panState.lastY = event.clientY;
+}
+
+function onPointerMove(event) {
+  if (!panState.dragging || !svgElement) return;
+  requestAnimationFrame(() => {
+    const dx = event.clientX - panState.lastX;
+    const dy = event.clientY - panState.lastY;
+    const viewBox = svgElement.viewBox.baseVal;
+    const scaleFactorX = viewBox.width / svgElement.clientWidth;
+    const scaleFactorY = viewBox.height / svgElement.clientHeight;
+    viewBox.x -= dx * scaleFactorX;
+    viewBox.y -= dy * scaleFactorY;
+    panState.lastX = event.clientX;
+    panState.lastY = event.clientY;
+  });
+}
+
+function onPointerUp() {
+  panState.dragging = false;
+}
+
+function onResize() {
+  if (resizeTimer) clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    resizeTimer = null;
+    renderChart();
+  }, RESIZE_DEBOUNCE);
+}
+
+rerenderButton.addEventListener('click', () => {
+  renderChart();
+});
+
+dataTextarea.addEventListener('change', () => {
+  renderChart();
+});
+
+window.addEventListener('resize', onResize);
+
+window.addEventListener('load', () => {
+  renderChart();
+});
+</script>
+</body>
+</html>
