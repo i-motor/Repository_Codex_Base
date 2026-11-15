@@ -1,0 +1,6 @@
+{
+  "schema": "c64-m9-1541-cycle-trace-v1",
+  "checkpoints": [
+    { "cycle": 0, "cpu": { "PC": 0 } }
+  ]
+}

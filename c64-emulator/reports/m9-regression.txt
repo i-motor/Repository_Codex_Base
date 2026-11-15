@@ -1,0 +1,296 @@
+OK RAM hat 65536 adressierbare Bytes und 16-Bit-Adresswrap
+OK Color-RAM speichert ausschließlich das untere Nibble
+OK Prozessorport arbeitet mit DDR, Ausgangslatch und Eingangspegeln
+OK ROM-Größen werden geprüft und Eingabepuffer kopiert
+OK Alle acht Kombinationen der C64-Banking-Bits
+OK ROM-RAM-Overlay bewahrt Schreibzugriffe unter BASIC und KERNAL
+OK Bei ausgeblendetem I/O ist CHAR-ROM lesbar und RAM beschreibbar
+OK I/O-Registerspiegelung und Schreib-Seiteneffekte
+OK Color-RAM im I/O-Bereich und angenähertes oberes Datenbus-Nibble
+OK Offener I/O-Bus liefert letzten Datenbuswert
+OK ROM-Manager erkennt vollständigen ROM-Satz
+OK System-Reset löscht den RAM nicht, Power-On initialisiert ihn
+OK PAL-Raster besitzt 19656 Master-Zyklen je Frame
+OK Master-Zyklus wird deterministisch fortgeschaltet
+OK Open-Collector-Signale bleiben niedrig, solange eine Quelle zieht
+OK Getrennte IRQ-Quellen quittieren sich nicht gegenseitig
+OK Gemeinsamer NMI-Pegel triggert ausschließlich bei neuer Aktivflanke
+OK RDY hält CPU-Lesezyklen an, nicht CPU-Schreibzyklen
+OK VIC-Busübernahme meldet Schreibkonflikte explizit
+OK Opcode-Tabelle: 256 Einträge, 151 offizielle Opcodes und 12 JAM-Werte
+OK Jeder der 256 Opcodes durchläuft einen tatsächlichen CPU-Mikrocodepfad
+OK RESET benötigt sieben Lesezyklen und liest den echten Hardwarevektor
+OK Der echte M2-Bus führt LDA/STA/INC mit NMOS-Dummy-Write aus
+OK LDA absolute,X verwendet beim Seitenwechsel einen Dummy-Read
+OK STA absolute,X führt auch ohne Seitenwechsel einen Dummy-Read aus
+OK Indirekter JMP übernimmt den NMOS-Seitenwrap-Bug
+OK Indexed-indirect wickelt Nullseitenpointer modulo 256
+OK Relative Verzweigung: nicht genommen, genommen, mit Seitenwechsel
+OK JSR und RTS schreiben die reale Rücksprungadresse auf den Stack
+OK BRK legt PC+2 und B-Flag auf den Stack und liest den IRQ-Vektor
+OK IRQ ist maskierbar, sieben Takte lang und sichert das B-Flag gelöscht
+OK NMI benötigt eine Flanke und hat Vorrang vor IRQ
+OK CLI verzögert anstehendes IRQ um einen Folgebefehl
+OK RDY niedrig wiederholt CPU-Lesezyklen, ohne Mikrocode fortzuschalten
+OK RDY niedrig stoppt keine CPU-Schreibzyklen
+OK RMW an I/O-Adressen löst sowohl Dummy-Write als auch End-Write aus
+OK BCD-ADC und SBC unterscheiden NMOS-Binary-Flags vom BCD-Ergebnis
+OK Undokumentierter SLO kombiniert ASL, Dummy-Write und ORA
+OK JAM blockiert die CPU bis zum Hardware-RESET
+OK Ein normaler STA-Zugriff erreicht echte memory-mapped I/O-Register
+OK Alle 151 offiziellen Opcodes haben ihre Basiszykluszahl ohne Page-Crossing
+OK RAM-Unterlage und KERNAL-ROM führen echten CPU-Maschinencode über RESET aus
+OK Spezifische Statusflag-Vektoren für Shift, BIT, CMP und Transfers
+OK IRQ nach SEI verwendet das I-Flag vor Abschluss des Befehls
+OK BRK mit nachfolgender NMI-Flanke verwendet NMI-Vektor und BRK-Stackbild
+OK AEC verweigert CPU-Lesezugriff vollständig und erhält CPU-Zustand
+OK Hardware-RESET-Flanke startet genau eine CPU-Reset-Sequenz
+OK CIA: DDRA/DDRB unterscheiden Ausgabelatch und externe Eingänge
+OK CIA: Timer-Latch, Force Load, Stop und Low/High-Register
+OK CIA: Timer A unterläuft nach Latch+1 Zähltakten und setzt ICR
+OK CIA: Maskierte Unterläufe werden nachträglich bei ICR-Freigabe aktiv
+OK CIA: Timer A und Timer B stoppen im One-Shot-Modus
+OK CIA: Timer B kaskadiert Timer-A-Unterläufe
+OK CIA: Timer B kaskadiert nur bei CNT hoch, wenn Modus 11 gesetzt
+OK CIA: CNT-getriebene Timer zählen nur auf steigenden Flanken
+OK CIA: PB6/PB7 erzeugen Timer-Toggle und One-Cycle-Pulse
+OK CIA: FLAG löst ausschließlich bei fallender Flanke aus
+OK CIA: Serial-Eingang übernimmt acht SP-Bits auf CNT-Flanken
+OK CIA: Serial-Ausgabe beendet acht Bits nach 16 Timer-A-Unterläufen
+OK CIA: TOD mit 50-Hz-Netzimpulsen und Stopp durch Stunden-Write
+OK CIA: TOD-Alarm setzt eigenes ICR-Bit und Read-Hours latcht die Uhr
+OK CIA: TOD rollt BCD-Sekunden und Stunden mit 12h-AM/PM korrekt
+OK CIA: Registerspiegelung $DC0D/$DC1D setzt denselben ICR-Zustand
+OK CIA: Timer B kann vollständig über CNT statt PHI2 laufen
+OK CIA: ICR-Lesevorgang löscht nur die eigene CIA-Interruptquelle
+OK CIA: 60-Hz-TOD benötigt sechs Netzimpulse je Zehntelsekunde
+OK CIA: TOD schaltet 12 PM auf 1 PM ohne PM-Wechsel
+OK CIA: TOD schaltet 11 PM auf 12 AM mit PM-Wechsel
+OK CIA: Unmaskiertes FLAG-ICR bleibt beim Lesen ohne Interruptbit 7
+OK CIA: Reset löscht laufende Timer, ICR-Masken und Port-DDR
+OK Tastatur: Taste A schließt PB1/PA2 und wird nur über CIA gelesen
+OK Tastatur: Mehrfachtasten und matrixbedingte Geisterkontakte
+OK Tastatur: Cursor-Links und F2 verwenden reale SHIFT-Matrixkontakte
+OK Tastatur: Deutsches Host-Layout vertauscht Codepositionen Y/Z
+OK Joystick: Beide Ports sind unabhängig und aktiv-low
+OK Joystickport 2 liegt auf CIA 1 Port A, Port 1 auf Port B
+OK InputQueue übernimmt gleichzeitige Ereignisse deterministisch nach Takt
+OK C64-InputQueue steuert Tastatur und Joystick erst im fälligen CPU-Takt
+OK CIA 2 steuert VIC-Bank über tatsächliche Port-Ausgänge
+OK IEC Open Collector: C64 und Laufwerk halten Leitungen unabhängig
+OK CIA 2 Port A steuert IEC-Ausgänge und liest externe CLOCK/DATA-Pegel
+OK RESTORE erzeugt nur mit freigegebenem CIA-2-FLAG-Interrupt eine NMI-Flanke
+OK CIA-Interrupts werden über die CPU-Vektoren real ausgeführt
+OK CIA-Timer laufen auch bei durch RDY angehaltener CPU weiter
+OK 6510 liest Joystickkontakt tatsächlich über LDA $DC00 und speichert ihn im RAM
+OK 6510 erreicht einen echten CIA-2-FLAG-NMI-Vektor und quittiert den ICR
+OK VIC Timing: 312 PAL-Zeilen mit je 63 Zyklen und 8 Dot-Positionen
+OK Badline-Vorlauf: BA 3 CPU-Takte vor 40 gestohlenen Φ2-Zyklen
+OK VIC-Register werden mit 64-Byte-Maske im CPU-I/O-Bereich gespiegelt
+OK VIC-Rasterlesung aus D011 und D012 verwendet den aktuellen Rasterzähler
+OK Rasterinterrupt wird im VIC gelatcht, maskiert und per D019 selektiv quittiert
+OK IRQ-Masken können ein bestehendes VIC-Rasterinterrupt-Latch sichtbar machen
+OK VIC-Chargen-ROM ist in Bank 0/2 sichtbar und in Bank 1/3 nicht
+OK CPU-Banking und VIC-Banking bleiben vollständig voneinander getrennt
+OK Originale 8x8-Bitmaske aus Zeichensatz-ROM erzeugt Zeichenpixel und Hintergrund
+OK Bildschirmbasis aus D018 wählt echte Bildschirmmatrix in RAM
+OK CPU-STA auf D018 bewirkt realen VIC-Bildschirmmatrixwechsel
+OK Benutzerdefinierter Zeichensatz aus RAM in VIC-Bank 1 ist unabhängig vom CHAR-ROM
+OK Border-Farbe und Hintergrundfarbe werden aus D020/D021 gelesen
+OK VIC-Badline-DMA hält CPU-Lesezyklen an, ohne die CIA-Takte zu stoppen
+OK VIC-Framebuffer enthält ausschließlich emulierte Farbindizes und tauscht pro Frame
+OK Grafikmodus-Dekodierung bildet fünf reguläre und drei ungültige Kombinationen ab
+OK ROM-Start arbeitet ausschließlich mit echtem synthetischem KERNAL-Maschinencode
+OK Border-Registerwechsel innerhalb einer Rasterzeile wirkt auf nachfolgende Dot-Ausgabe
+OK 38-Spalten-Modus schließt acht zusätzliche Pixel links und rechts mit Border
+OK 24-Zeilen-Modus verschiebt vertikalen Rahmen auf 55 bis 246
+OK Multicolor-Zeichenausgabe nutzt Farbregister und 2-Pixel-Gruppen
+OK ECM-Zeichenmodus wählt Hintergrundfarbe aus den zwei hohen Zeichencode-Bits
+OK CPU läuft während echter VIC-Badlines nach den DMA-Zyklen regulär weiter
+OK VIC-Rasterinterrupt wird durch eine wirkliche 6510-IRQ-Routine quittiert
+OK VIC-Diagnoseprogramm schreibt die grafischen Daten über echte 6510-STA-Zugriffe
+OK Sprite-Register steuern acht X/Y-Paare, X-MSB, Aktivierung und individuelle Farben
+OK Ein Sprite besteht aus genau 24 x 21 Pixeln mit transparentem Umfeld
+OK X-MSB verschiebt den Sprite-Kanal um 256 Pixel nach rechts
+OK Ein deaktivierter Sprite-Kanal generiert keine Daten-DMA oder Pixel
+OK Sprite-Pointer werden tatsächlich aus Bildschirmbasis + $3F8 gelesen
+OK Sprite-DMA verwendet die über CIA 2 gewählte VIC-Bank
+OK Sprite-DMA lädt 63 Datenbytes mit zwei Φ2-Busübernahmen pro Rasterzeile
+OK Sprite-DMA-Fetches haben deterministische φ1/φ2-Phasen und reale RAM-Adressen
+OK Sprite-DMA setzt BA mit drei CPU-Takten Vorlauf und belegt den Φ2-Bus
+OK CPU-Lesezyklen werden bei Sprite-DMA angehalten, CIA-Timer laufen weiter
+OK Vollständig aktive acht Sprite-Kanäle erzeugen eigene Daten-DMA
+OK Horizontale Verdopplung wiederholt jedes Sprite-Pixel einmal
+OK Vertikale Verdopplung wiederholt jede Sprite-Datenzeile zweimal
+OK Sprite-Multicolor verwendet D025, D026 und individuelle Spritefarbe
+OK Zwei überlappende Sprites setzen Bits beider Kanäle in D01E
+OK Lesezugriff D01E löscht Sprite-Sprite-Kollision, Peek nicht
+OK Sprite-Sprite-IRQ kann nach bereits gesetztem Latch maskiert werden
+OK Sprite-Hintergrund-Kollision benutzt echte Zeichendaten und D01F
+OK Sprite-Priorität hinter Vordergrundpixeln blendet Sprite aus, Kollision bleibt
+OK Sprite-Hintergrund-IRQ ist separat maskierbar und quittierbar
+OK Schreibzugriffe auf D01E/D01F verändern die Kollisionslatches nicht
+OK Spritefarbe kann durch ein Register-Write innerhalb der Rasterzeile wechseln
+OK Sprite-Versetzung zwischen Frames wird über Hardwarepositionsregister übernommen
+OK Sprite-Foreground-Test unterscheidet monochrome Zeichenpixel und Hintergrund
+OK CPU-STA aktiviert Sprite über echtes VIC-Register und erzeugt Sprite-Pixel
+OK Sprite- und Raster-IRQ-Latches bleiben bei selektiver Quittierung unabhängig
+OK Das Sprite-Demoprogramm füllt Sprite-RAM und VIC-Register durch echte CPU-Schreibzyklen
+OK Reale 6510-IRQ-Routine quittiert Sprite-Kollision über D01E und D019
+OK D018-Änderung vor dem Sprite-Pointer-Fetch wirkt noch in derselben Rasterzeile
+OK D018-Änderung nach Pointer-Fetch ändert nicht rückwirkend das geladene Sprite
+OK Kollisionsregister sind auf allen VIC-Registerspiegeln lesbar
+OK SID besitzt drei unabhängige Stimmen, genau 32 Register und einen 6581-Filter
+OK SID-Register sind im I/O-Bereich alle 32 Bytes gespiegelt
+OK CPU-I/O-Banking blendet SID-Register aus und schaltet auf RAM zurück
+OK SID-Frequenzregister bilden einen 16-Bit-Phasenzuwachs pro CPU-Takt
+OK SID-Frequenz 0x1D46 entspricht etwa 440 Hz bei PAL-Takt
+OK SID-Phasenakkumulator läuft exakt nach 24 Bit um
+OK Dreieckswelle faltet ihre 12-Bit-Amplitude
+OK Ringmodulation invertiert die Dreiecksamplitude mit dem Modulator-MSB
+OK Sägezahn liefert das obere 12-Bit-Phasenwort
+OK Pulswelle reagiert auf die 12-Bit-Pulsbreite
+OK NOISE-LFSR wird nur durch steigende Oszillator-Bit-19-Flanke getaktet
+OK Kombinierte Wellenformen verwenden deterministische 12-Bit-Verknüpfung
+OK TEST-Bit hält den Akkumulator an und setzt den Rauschzustand zurück
+OK SYNC setzt die Zielphase bei steigender MSB-Flanke der Quellstimme zurück
+OK ADSR-Attack benutzt alle 16 dokumentierten Rate-Perioden
+OK ADSR wechselt von Attack in Decay bei Level 255
+OK Decay hält den 4-Bit-Sustainpegel und Release senkt ihn ab
+OK ADSR-Ratecounter wird bei Gate-Wechsel nicht künstlich zurückgesetzt
+OK Release aus Null darf nicht auf Level 255 unterlaufen
+OK SID-POTX, POTY, OSC3 und ENV3 sind lesbar
+OK SID-Buslatch ist auf schreibgeschützten Registeradressen nur vorübergehend lesbar
+OK SID-peek verändert weder Buslatch noch Zeitstempel
+OK D418-Masterlautstärke Null erzeugt digitales Schweigen
+OK D418-Lautstärke skaliert die unverfilterte Stimme
+OK SID-Filter-Cutoff verwendet D415 Bits 0–2 und D416 Bits 3–10
+OK Filter-Resonanz und Stimmenrouting werden aus D417 gelesen
+OK Tiefpass, Bandpass und Hochpass erzeugen voneinander abweichende Ausgänge
+OK VOICE3-OFF unterdrückt nur ungefilterte dritte Stimme
+OK SID-Modell kann zwischen 6581 und angenähertem 8580 wechseln
+OK SID-Power-On und Hardware-Reset löschen Register, Phasen und Samplebuffer
+OK SID wird mit jedem globalen Master-Zyklus genau einmal fortgeschaltet
+OK SID-Sounddemo wird ausschließlich von echten 6510-Befehlen initialisiert
+OK Resampling erzeugt exakt 48.000 Samples nach einer Sekunde emulierter Ganzzahlzyklen
+OK PAL-Takt in 48 kHz bleibt auf einen Sampleschritt genau
+OK Resampler integriert konstantes Signal amplitudengetreu
+OK Resampler bildet eine Stufe als gewichtete Teilintervalle ab
+OK Resampler-Samplepuffer kann in Blöcken ausgelesen werden
+OK Resampler-Ringpuffer meldet Überlauf und verwirft die ältesten Daten
+OK Resampler lehnt ungültige Frequenzen und Sampleanzahlen ab
+OK Resampler-Clipping verhindert Werte außerhalb des PCM-Normbereichs
+OK AudioEngine meldet fehlende Browser-AudioWorklet-APIs eindeutig
+OK AudioEngine validiert PCM-Datentyp vor dem Enqueue
+OK AudioEngine verbucht transferierte Float32Array-Samples und Rückmeldungen
+OK AudioEngine initialisiert ein natives Stereo-AudioWorklet mit realer Gerätesamplerate
+OK Fertige VIC-Frames werden für Audio-Synchronisierung mit Taktstempel kopiert
+OK M7 PRG: Zweibyte-Ladeadresse ist Little-Endian
+OK M7 PRG: Serialisierung bewahrt Adresse und Daten einschließlich Nullbytes
+OK M7 PRG: leeres Programm mit gültigem Header ist zulässig
+OK M7 PRG: fehlerhafte und überlange Dateien werden abgewiesen
+OK M7 Base64: alle 256 Bytewerte bleiben unverändert
+OK M7 Base64: größere PRG-Datei wird ohne Stacküberlauf übertragen
+OK M7 Base64: leere Daten und Padding werden korrekt behandelt
+OK M7 Base64: ungültige Kodierungen werden abgewiesen
+OK M7 Container: JSON importiert und exportiert PRG bytegenau
+OK M7 Container: unbekannte Version, fehlende und falsche Felder abgewiesen
+OK M7 FileManager: PRG-Dateikatalog mit maximal 16 Zeichen
+OK M7 FileManager: Rückgabe einer Datei ist eine unabhängige Kopie
+OK M7 FileManager: Überschreiben verlangt ausdrückliche Freigabe
+OK M7 FileManager: Platzhalter * und ? finden passende Dateinamen
+OK M7 FileManager: Umbenennen und Entfernen aktualisieren den Katalog
+OK M7 FileManager: einzelne Browser-PRG-Dateien werden asynchron importiert
+OK M7 FileManager: JSON-Containerimport prüft doppelte Namen atomar
+OK M7 FileManager: Base64-Container wird aus Katalogdaten erzeugt
+OK M7 FileManager: nicht unterstützte Browserdateien werden abgewiesen
+OK M7 IEC: offene Kollektoren ermöglichen mehrere aktive Low-Treiber
+OK M7 IEC: ATN, CLOCK und DATA werden über echte IEC-Kanten dekodiert
+OK M7 IEC: fremde Geräteadressen werden ignoriert
+OK M7 IEC: LISTEN und TALK wählen das virtuelle Gerät 8
+OK M7 IEC: OPEN und DATA lesen alle PRG-Bytes samt Ladeadresse
+OK M7 IEC: sekundäre Adresse 1 ist auch für PRG-LOAD lesbar
+OK M7 IEC: SAVE über DATA- und CLOSE-Kanal persistiert das PRG
+OK M7 IEC: ein vorhandenes PRG wird ohne @ nicht überschrieben
+OK M7 IEC: @-Präfix erlaubt Überschreiben beim SAVE
+OK M7 IEC: nicht vorhandene Datei setzt Status 62
+OK M7 IEC: Statuskanal 15 gibt DOS-Statuszeichenfolge zurück
+OK M7 IEC: DOS-Kommandos Scratch und Rename aktualisieren Dateikatalog
+OK M7 IEC: Directory-PRG hat gültige BASIC-Zeilenverkettung
+OK M7 IEC: Reset erhält die eingelegte virtuelle Diskette
+OK M7 CIA2: IEC-Ausgänge liegen auf PA3/PA4/PA5 und reagieren invertiert
+OK M7 CIA2: CLOCK und DATA gelangen über PA6/PA7 in die CPU
+OK M7 KERNAL: Diagnosecode ruft die echten ROM-Einsprungadressen auf
+OK M7 KERNAL: SAVE-Diagnose verwendet $FFD8 und Zero-Page-Startzeiger
+OK M7 IEC: Gerät 8 sendet Bits getaktet auf DATA und CLOCK zurück
+OK M7 CPU: echte 6510-STA-Befehle übertragen LISTEN und OPEN über CIA2
+OK M7 IEC: Host sendet ein ganzes PRG als bitserielles SAVE auf Gerät 8
+OK M7 IEC: Datenstrom des emulierten Laufwerks wird als LSB-first übertragen
+OK M7 KERNAL: synthetisches Test-ROM führt SETLFS/SETNAM/LOAD über echte JSR-Mikrozyklen aus
+OK M8 Referenz: CRC32 hat bekannten ISO-3309-Prüfwert
+OK M8 Referenz: CPU-RMW-Szenario verifiziert drei echte Schreibzugriffe
+OK M8 Referenz: falscher erwarteter Speicherwert wird als Failure gemeldet
+OK M8 Referenz: falsche Busadresse wird erkannt
+OK M8 Referenz: fehlende Original-ROMs werden als skipped statt bestanden klassifiziert
+OK M8 Referenz: falsche Manifestversion wird zurückgewiesen
+OK M8 Referenz: doppelte Manifest-IDs werden zurückgewiesen
+OK M8 Referenz: RAM-Bild muss exakt 64 KiB groß sein
+OK M8 Referenz: externes 64-KiB-Abbild wird als CPU-RAM tatsächlich ausgeführt
+OK M8 Referenz: Bildschirmtext wird ausschließlich aus tatsächlich geschriebenem Screen-RAM erkannt
+OK M8 Referenz: VIC-Rasterposition stimmt nach Frame-Rollover mit Clock überein
+OK M8 Fehlerkorrektur: bei Vordergrunddeckung kann ein niedriger priorisierter sichtbarer Sprite erscheinen
+OK M8 Fehlerkorrektur: beide verdeckten Sprites kollidieren, ohne Farbe zu übermalen
+OK M8 KERNAL: Diagnosen können den gebooteten Hardwarezustand erhalten
+OK M8 IEC: RESET erhält virtuelle Diskdateien und verwirft offene Kanäle
+OK M8 IRQ: maskierte Rasterquelle bleibt gelatcht und kann später IRQ auslösen
+OK M8 CPU-Referenzadapter besitzt flaches RAM auch bei $0000 und $0001
+OK M8 CPU-Referenzadapter führt 6502-Reset-Vektor ohne ROM-Banking aus
+OK M8 Referenz: der reine CPU-Adapter weist VIC-spezifische Prüfpunkte zurück
+OK M9 D64: 35-Track-Format und erwartete Sektorkapazität
+OK M9 D64: 40 Spuren und optionale Fehlerbyte-Tabelle
+OK M9 D64: sektorbasierter Write/Read-Roundtrip
+OK M9 D64: PRG-Verzeichnis und Ladeadressbytes
+OK M9 D64: Sektorketten über mehr als 254 Bytes
+OK M9 D64: BAM erkennt belegte Sektoren und Überbelegung
+OK M9 D64: beschädigte zirkuläre Dateiketten werden abgewiesen
+OK M9 IEC: D64-Mount macht Original-PRGs auf Gerät 8 sichtbar
+OK M9 IEC: SAVE in gemountetes D64 schreibt PRG-Sektorkette
+OK M9 GCR: bekannte Commodore-Nibble-Codierung
+OK M9 GCR: Sektor-Checksummen und Track-Bytefolge
+OK M9 VIA: DDRA/DDRB und physische Portpegel
+OK M9 VIA: Timer 1 one-shot und maskierter IRQ
+OK M9 VIA: Timer 1 continuous, Timer 2 und IER-Quittierung
+OK M9 VIA: CA1/CB1-Flanken und Interruptmasken
+OK M9 1541: eigener RAM-/VIA-/ROM-Adressbus
+OK M9 1541: eigene 6502 führt ROM-Reset und RAM-Write aus
+OK M9 1541: unabhängiges Taktverhältnis bleibt über längere Läufe stabil
+OK M9 1541: Motor, Spurwahl und rotierender GCR-Datenpfad
+OK M9 1541: Hardwaremodus ist explizit und ROM-pflichtig
+OK M9 NTSC: MOS 6567R8 besitzt 263 Zeilen und 65 Takte
+OK M9 NTSC: Umschaltung führt vollständigen Raster-Frame aus
+OK M9 PAL: Wechsel NTSC zu PAL regeneriert 312×63-Profil
+OK M9 SID: 6581 und 8580 verändern das Filtermodell
+OK M9 SID: beide Modelle behalten identisches Register- und Zyklusinterface
+OK M9 Gamepad: Achsen, Buttons, D-Pad und Gegenrichtungen
+OK M9 Gamepad: zwei unabhängige C64-Joystickports
+OK M9 Worker: request/response und unabhängiges Instanzprotokoll
+OK M9 Integration: PAL-Regression bei aktivierten optionalen Komponenten
+OK M9 D64: bestehende PRG-Datei überschreiben und Sektoren freigeben
+OK M9 D64: Directory erweitert sich bei mehr als acht Dateien auf Spur 18
+OK M9 D64: Browserimport nach Mount erscheint auch im D64-Export
+OK D64-Referenz: freier BAM-Sektor wird bei PRG-Write belegt
+OK D64-Referenz: Partielle letzte Sektorlänge 254 Byte
+OK D64-Referenz: Partielle letzte Sektorlänge 1 Byte
+OK GCR-Referenz: alle 256 möglichen Bytewerte verlustfrei
+OK 1541-Referenz: Reset-Vektor liest ROM bei $FFFC/$FFFD
+OK 1541-Referenz: 32-KiB-ROM wird bei $8000 eingeblendet
+OK VIA-Referenz: Timer 2 PB6 zählt nur negative CNT-Flanken
+OK 1541-Referenz: GCR-Track rotiert bei Motor an
+OK NTSC-Referenz: PAL-VIC-Bild bleibt bei optionalen M9-Geräten bytegleich
+OK NTSC-Referenz: vollständiger Frame erzeugt Daten im 404×240-Bereich
+OK SID-Modell-Referenz: 6581 und 8580 teilen digitale Oszillatortakte
+OK SID-Modell-Referenz: Filtercharakteristik wird separat berechnet
+OK Gamepad-Referenz: analoge Deadzone unterdrückt leichte Auslenkung
+OK Gamepad-Referenz: Portwechsel setzt gehaltene Kontakte zurück
+OK Worker-Referenz: asynchrone Anfragen behalten ihre eindeutigen IDs
+295/295 Tests bestanden

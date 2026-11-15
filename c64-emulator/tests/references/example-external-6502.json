@@ -1,0 +1,20 @@
+{
+  "format": "c64-reference-v1",
+  "scenarios": [
+    {
+      "hardware": "cpu6502",
+      "id": "klaus-dormann-functional-6502-user-supplied",
+      "source": {
+        "type": "external",
+        "description": "Externe 6502 Functional Test Suite, Binärabbild nicht enthalten. Start-/Erfolgsadresse müssen zur konkreten lokal bereitgestellten Testversion passen."
+      },
+      "setup": {
+        "memoryImage": "6502_functional_test.bin",
+        "port": "$34",
+        "cpu": { "PC": "$0400", "SP": "$fd", "P": "$20" }
+      },
+      "run": { "maxCycles": 50000000, "untilPC": "$3469", "stableInstructions": 4, "traceFilter": "writes" },
+      "expect": { "cpu": { "PC": "$3469" } }
+    }
+  ]
+}

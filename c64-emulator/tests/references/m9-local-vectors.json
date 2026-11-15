@@ -1,0 +1,20 @@
+{
+  "schema": "c64-m9-local-reference-v1",
+  "classification": "published-format-constants-and-self-contained-test-fixtures",
+  "hardware": {
+    "pal": { "linesPerFrame": 312, "cyclesPerLine": 63, "cyclesPerFrame": 19656 },
+    "ntsc6567r8": { "linesPerFrame": 263, "cyclesPerLine": 65, "cyclesPerFrame": 17095 },
+    "d64": { "tracks35Bytes": 174848, "tracks40Bytes": 196608, "tracks35Sectors": 683, "tracks40Sectors": 768 },
+    "gcr": { "bytes": [0, 17, 34, 51], "encoded": [82, 150, 185, 74, 115] },
+    "via6522": { "t1InterruptBit": 64, "t2InterruptBit": 32, "ca1InterruptBit": 2, "cb1InterruptBit": 16 }
+  },
+  "externalChecks": [
+    "original-c64-rom-boot-and-iec",
+    "1541-firmware-rom-smoke",
+    "1541-cycle-trace",
+    "d64-external-image-parse",
+    "8580-sid-output-reference",
+    "ntsc-vic-raster-reference",
+    "firefox-gamepad-and-worker-runtime"
+  ]
+}

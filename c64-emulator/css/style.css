@@ -1,0 +1,58 @@
+body {
+  margin: 0;
+}
+
+.app {
+  width: min(1100px, 100%);
+  margin: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  box-sizing: border-box;
+}
+
+.header, .control-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.control-row {
+  justify-content: flex-start;
+}
+
+.screen-host {
+  width: 100%;
+  height: clamp(240px, 58vh, 650px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  background: #07090d;
+}
+
+#c64-screen {
+  display: block;
+  image-rendering: pixelated;
+  outline-offset: 3px;
+  touch-action: none;
+}
+
+#c64-screen:focus-visible {
+  outline: 2px solid currentColor;
+}
+
+.cpu-status {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: ui-monospace, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+button {
+  cursor: pointer;
+}

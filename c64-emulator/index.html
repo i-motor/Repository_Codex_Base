@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>C64 Emulator – MOS 6510, CIA 6526 und VIC-II und IEC-Gerät 8 M9</title>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <div>
+        <h1>Commodore 64</h1>
+        <p>Hardwareorientierter Emulator · MOS 6510 · zwei CIA 6526 · PAL-VIC-II mit acht Hardware-Sprites · MOS 6581 SID · IEC-Laufwerk 8 · M9</p>
+      </div>
+      <a href="./tests/index.html">Hardwaretests öffnen</a>
+    </header>
+    <section class="display-panel" aria-label="Videoausgabe und Eingabe">
+      <div id="screen-host" class="screen-host">
+        <canvas id="c64-screen" tabindex="0" aria-label="Emulator-Eingabe: Klicken zum Fokussieren, Tastatur und Maus als Joystick"></canvas>
+      </div>
+      <p class="display-note">Die Bildausgabe entsteht ausschließlich aus VIC-II-Register- und Speicherzugriffen. Für BASIC-Tastatureingaben das Canvas anklicken. Mausbewegung steuert den Joystick, Linksklick ist Feuer.</p>
+    </section>
+    <section class="controls" aria-labelledby="cpu-title">
+      <h2 id="cpu-title">MOS 6510 – CPU-Diagnose</h2>
+      <div class="control-row">
+        <button type="button" id="power-on">Power-On</button>
+        <button type="button" id="reset-cpu">Hardware-RESET</button>
+        <button type="button" id="step-cycle">1 CPU-Takt</button>
+        <button type="button" id="step-instruction">1 CPU-Befehl</button>
+        <button type="button" id="run-batch">10.000 CPU-Takte</button>
+        <button type="button" id="run-frame">1 Video-Bild</button>
+        <button type="button" id="run-continuous">Ausführung starten</button>
+        <button type="button" id="load-demo">CPU-Demo bei $C000</button>
+        <button type="button" id="load-cia-demo">CIA-IRQ-Demo bei $C000</button>
+        <button type="button" id="load-vic-demo">VIC-Zeichensatz-Demo</button>
+        <button type="button" id="load-sprite-demo">Hardware-Sprite-Demo</button>
+        <button type="button" id="load-sid-demo">SID-Dreiklang (6510)</button>
+      </div>
+      <pre id="cpu-status" class="cpu-status" aria-live="polite"></pre>
+      <pre id="bus-trace" class="cpu-status" aria-label="Letzte Buszyklen"></pre>
+      <p id="cpu-message" role="status" aria-live="polite"></p>
+    </section>
+    <section class="controls" aria-labelledby="vic-title">
+      <h2 id="vic-title">VIC-II – PAL/NTSC, Sprite-DMA und Kollisionen</h2>
+      <div class="control-row"><label for="video-standard">Videostandard</label><select id="video-standard"><option value="PAL">PAL 6569 (312 × 63)</option><option value="NTSC">NTSC 6567R8 (263 × 65)</option></select></div>
+      <pre id="vic-status" class="cpu-status" aria-live="polite"></pre>
+      <p>Die Zeichen- und Sprite-Demos verwenden echten 6510-Maschinencode und die VIC-Speichersicht. Die Sprite-Demo zeigt acht Kanäle einschließlich Multicolor, Expansion und Überlappung. Für den Originalstart müssen BASIC-, KERNAL- und Zeichensatz-ROM geladen sein.</p>
+    </section>
+    <section class="controls" aria-labelledby="sid-title">
+      <h2 id="sid-title">MOS 6581 SID – drei Stimmen und Web Audio</h2>
+      <div class="control-row">
+        <button type="button" id="audio-start">Audio aktivieren und ausführen</button>
+        <button type="button" id="audio-stop" disabled>Audio deaktivieren</button>
+        <label for="sid-model">SID-Modell</label>
+        <select id="sid-model">
+          <option value="6581">6581 (Näherung)</option>
+          <option value="8580">8580 (Näherung)</option>
+        </select>
+      </div>
+      <p>Firefox gibt Audio erst nach einer Benutzeraktion frei. Die Sounddemo setzt die SID-Register durch echte 6510-Maschinenbefehle. Die Sampleerzeugung folgt dem C64-Master-Takt; das AudioWorklet spielt die gepufferten Samples ab.</p>
+      <pre id="sid-status" class="cpu-status" aria-live="polite"></pre>
+      <p id="audio-message" role="status" aria-live="polite"></p>
+    </section>
+    <section class="controls" aria-labelledby="io-title">
+      <h2 id="io-title">CIA 6526, Tastatur und Joysticks</h2>
+      <div class="control-row">
+        <label for="keyboard-layout">Tastaturlayout</label>
+        <select id="keyboard-layout">
+          <option value="international">International (QWERTY)</option>
+          <option value="de">Deutsch (QWERTZ)</option>
+        </select>
+        <label for="joystick-port">Maus-Joystick</label>
+        <select id="joystick-port">
+          <option value="2">Port 2</option>
+          <option value="1">Port 1</option>
+        </select>
+        <label><input id="integer-scale" type="checkbox"> Ganzzahlige Bildskalierung</label>
+      </div>
+      <p>Im Layout „Deutsch (QWERTZ)“ richtet sich die Eingabe nach dem aufgedruckten Zeichen der deutschen Tastatur (z. B. Shift+7 = /, Shift+0 = =, Shift+2 = ", AltGr+Q = @, AltGr+8/9 = [ ]). Ohne C64-Entsprechung: ü = @, ö = :, ä = ;, ß = £, ^ = ↑, ´ = ←. Bei deutscher Browsersprache ist dieses Layout vorausgewählt.</p>
+      <p>Cursor links/oben: SHIFT + Cursor rechts/unten. F2/F4/F6/F8: SHIFT + F1/F3/F5/F7. RUN/STOP: Escape. Commodore-Taste: Alt. RESTORE: Bild auf oder F9.</p>
+      <div class="control-row"><label><input id="gamepad-enabled" type="checkbox"> Gamepad aktivieren</label><label for="gamepad-port">Gamepad 1 auf Port</label><select id="gamepad-port"><option value="2">2</option><option value="1">1</option></select></div>
+      <pre id="cia-status" class="cpu-status" aria-live="polite"></pre>
+    </section>
+    <section class="controls" aria-labelledby="drive-title">
+      <h2 id="drive-title">Virtuelles IEC-Laufwerk – Gerät 8</h2>
+      <div class="control-row">
+        <label for="drive-import">PRG oder Base64-Container</label>
+        <input type="file" id="drive-import" accept=".prg,.d64,.c64b64,.json" multiple>
+        <button type="button" id="drive-import-action">Dateien importieren</button>
+        <button type="button" id="drive-load-examples">Beispiel-PRGs einlegen</button>
+        <label for="drive-selection">Datei</label>
+        <select id="drive-selection" aria-label="Virtuelle Laufwerksdatei"></select>
+        <button type="button" id="drive-export-prg">PRG exportieren</button>
+        <button type="button" id="drive-export-base64">Alle als Base64 exportieren</button>
+        <button type="button" id="drive-export-d64">D64-Abbild exportieren</button>
+      </div>
+      <div class="control-row">
+        <button type="button" id="drive-kernal-load">KERNAL-LOAD-Diagnose (Gerät 8)</button>
+        <button type="button" id="drive-kernal-save">KERNAL-SAVE-Diagnose (Gerät 8)</button>
+      </div>
+      <div class="control-row"><label for="drive-rom">1541-ROM (16/32 KiB)</label><input id="drive-rom" type="file" accept=".rom,.bin"><label><input id="hardware-drive-enabled" type="checkbox"> Experimentellen 1541-Hardwaremodus aktivieren</label></div>
+      <p>Der optionale Hardwaremodus enthält eine eigene 6502-CPU, zwei VIA 6522 und einen GCR-Datenpfad, ist jedoch nicht vollständig firmware- oder IEC-kompatibilitätsverifiziert. Ohne aktivierten Hardwaremodus bleibt das bisherige virtuelle IEC-Gerät 8 erhalten.</p>
+      <p>Mit geladenen Original-ROMs können BASIC-Befehle wie <code>LOAD"NAME",8</code>, <code>LOAD"NAME",8,1</code>, <code>SAVE"NAME",8</code> und <code>LOAD"$",8</code> den emulierten IEC-Bus ansteuern. Der Dateidialog stellt nur die virtuellen Datenträgerinhalte bereit; er greift nicht in die BASIC-Ausführung ein. Die vollständige KERNAL-Protokollkompatibilität ist noch nicht extern bestätigt.</p>
+      <pre id="drive-status" class="cpu-status" aria-live="polite"></pre>
+      <p id="drive-message" role="status" aria-live="polite"></p>
+    </section>
+    <section class="controls" aria-labelledby="worker-title">
+      <h2 id="worker-title">Optionaler Web Worker</h2>
+      <div class="control-row"><button id="worker-demo" type="button">Separaten Worker-Test ausführen</button></div>
+      <p>Der Worker führt eine unabhängige C64-Instanz ohne DOM aus. Er verändert nicht den Zustand der aktiven Audio-/Canvas-Instanz.</p>
+      <p id="worker-status" role="status"></p>
+    </section>
+    <section class="controls" aria-labelledby="rom-title">
+      <h2 id="rom-title">Original-ROMs</h2>
+      <p>Benötigt: <code>basic.rom</code> (8192 Byte), <code>kernal.rom</code> (8192 Byte), <code>chargen.rom</code> (4096 Byte). Der RESET-Vektor wird aus der aktuellen Speicherabbildung gelesen.</p>
+      <div class="control-row">
+        <label for="rom-files">ROM-Dateien:</label>
+        <input id="rom-files" type="file" accept=".rom,.bin" multiple>
+        <button id="load-local-roms" type="button">ROMs aus Projektordner laden</button>
+        <button id="boot-roms" type="button">Original-ROMs starten</button>
+      </div>
+      <ul id="rom-status" class="rom-status" aria-live="polite"></ul>
+      <p id="system-status" class="system-status" role="status" aria-live="polite"></p>
+    </section>
+    <footer>
+      <p>M9: PAL/NTSC, D64, optionaler 1541-6502/VIA-Hardwarepfad, SID 6581/8580, Gamepad und Worker.</p>
+    </footer>
+  </main>
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>

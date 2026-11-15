@@ -1,0 +1,144 @@
+{
+  "schema": "c64-m8-report-v1",
+  "manifest": "/mnt/data/c64-emulator/tests/references/local-m8.json",
+  "roms": {
+    "basic": null,
+    "kernal": null,
+    "chargen": null
+  },
+  "referenceFiles": {},
+  "counts": {
+    "passed": 5,
+    "failed": 0,
+    "skipped": 1,
+    "error": 0
+  },
+  "results": [
+    {
+      "id": "cpu-rmw-bus-order",
+      "status": "passed",
+      "classification": "local-fixture",
+      "cycles": 12,
+      "mismatches": [],
+      "cpu": {
+        "A": 42,
+        "X": 0,
+        "Y": 0,
+        "SP": 253,
+        "PC": 49160,
+        "P": 36,
+        "lastOpcode": 238,
+        "instructionCount": 3,
+        "interruptsServiced": 0,
+        "sequence": null,
+        "stage": null,
+        "jammed": false,
+        "resetPending": false
+      },
+      "frameCRC32": 143260757,
+      "eventsCaptured": 3
+    },
+    {
+      "id": "cpu-indexed-page-cross",
+      "status": "passed",
+      "classification": "local-fixture",
+      "cycles": 7,
+      "mismatches": [],
+      "cpu": {
+        "A": 119,
+        "X": 1,
+        "Y": 0,
+        "SP": 253,
+        "PC": 49157,
+        "P": 36,
+        "lastOpcode": 189,
+        "instructionCount": 2,
+        "interruptsServiced": 0,
+        "sequence": null,
+        "stage": null,
+        "jammed": false,
+        "resetPending": false
+      },
+      "frameCRC32": 143260757,
+      "eventsCaptured": 7
+    },
+    {
+      "id": "cpu-rdy-held-read",
+      "status": "passed",
+      "classification": "local-fixture",
+      "cycles": 4,
+      "mismatches": [],
+      "cpu": {
+        "A": 0,
+        "X": 0,
+        "Y": 0,
+        "SP": 253,
+        "PC": 49152,
+        "P": 36,
+        "lastOpcode": null,
+        "instructionCount": 0,
+        "interruptsServiced": 0,
+        "sequence": "instruction",
+        "stage": "opcode",
+        "jammed": false,
+        "resetPending": false
+      },
+      "frameCRC32": 143260757,
+      "eventsCaptured": 4
+    },
+    {
+      "id": "vic-pal-raster-interrupt",
+      "status": "passed",
+      "classification": "local-fixture",
+      "cycles": 253,
+      "mismatches": [],
+      "cpu": {
+        "A": 0,
+        "X": 0,
+        "Y": 0,
+        "SP": 253,
+        "PC": 49153,
+        "P": 36,
+        "lastOpcode": 76,
+        "instructionCount": 84,
+        "interruptsServiced": 0,
+        "sequence": "instruction",
+        "stage": "operand",
+        "jammed": false,
+        "resetPending": false
+      },
+      "frameCRC32": 143260757,
+      "eventsCaptured": 253
+    },
+    {
+      "id": "vic-pal-one-frame",
+      "status": "passed",
+      "classification": "local-fixture",
+      "cycles": 19656,
+      "mismatches": [],
+      "cpu": {
+        "A": 0,
+        "X": 0,
+        "Y": 0,
+        "SP": 253,
+        "PC": 49154,
+        "P": 36,
+        "lastOpcode": 76,
+        "instructionCount": 6193,
+        "interruptsServiced": 0,
+        "sequence": "instruction",
+        "stage": "operand",
+        "jammed": false,
+        "resetPending": false
+      },
+      "frameCRC32": 143260757,
+      "eventsCaptured": 19656
+    },
+    {
+      "id": "original-rom-boot",
+      "status": "skipped",
+      "classification": "requires-original-roms",
+      "reason": "Originale BASIC-/KERNAL-/CHAR-ROMs fehlen"
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "format": "c64-reference-v1",
+  "scenarios": [
+    {
+      "id": "cpu-rmw-bus-order",
+      "source": { "type": "local", "description": "Deterministische 6510-Busfolge mit RMW-Dummy-Write" },
+      "setup": { "address": "$c000", "program": [169, 42, 141, 0, 193, 238, 0, 193, 76, 8, 192], "port": "$35" },
+      "run": { "cycles": 12, "traceFilter": "writes" },
+      "expect": {
+        "cpu": { "A": "$2a", "PC": "$c008", "instructionCount": 3 },
+        "memory": [{ "address": "$c100", "value": "$2b" }],
+        "clock": { "cycle": 12 },
+        "trace": [
+          { "cycle": 5, "address": "$c100", "value": "$2a", "kind": "write", "stage": "data-write" },
+          { "cycle": 10, "address": "$c100", "value": "$2a", "kind": "write", "stage": "rmw-dummy-write" },
+          { "cycle": 11, "address": "$c100", "value": "$2b", "kind": "write", "stage": "rmw-write" }
+        ]
+      }
+    },
+    {
+      "id": "cpu-indexed-page-cross",
+      "source": { "type": "local", "description": "LDA absolute,X über eine Seitengrenze" },
+      "setup": {
+        "address": "$c000", "program": [162, 1, 189, 255, 32, 76, 5, 192],
+        "memory": [{ "address": "$2100", "value": "$77" }]
+      },
+      "run": { "cycles": 7, "traceFilter": "reads" },
+      "expect": {
+        "cpu": { "X": 1, "A": "$77", "PC": "$c005", "instructionCount": 2 },
+        "trace": [
+          { "cycle": 0, "address": "$c000", "stage": "opcode" },
+          { "cycle": 1, "address": "$c001", "stage": "operand" },
+          { "cycle": 2, "address": "$c002", "stage": "opcode" },
+          { "cycle": 3, "address": "$c003", "stage": "operand" },
+          { "cycle": 4, "address": "$c004", "stage": "operand" },
+          { "cycle": 5, "address": "$2000", "stage": "index-dummy" },
+          { "cycle": 6, "address": "$2100", "stage": "data-read", "value": "$77" }
+        ]
+      }
+    },
+    {
+      "id": "cpu-rdy-held-read",
+      "source": { "type": "local", "description": "RDY hält Opcode-Fetch und bewirkt wiederholte Buslesungen" },
+      "setup": { "address": "$c000", "program": [169, 85, 234], "rdyLow": true },
+      "run": { "cycles": 4, "traceFilter": "reads" },
+      "expect": {
+        "cpu": { "PC": "$c000", "instructionCount": 0 },
+        "trace": [
+          { "cycle": 0, "address": "$c000", "stage": "opcode", "repeatedRead": true },
+          { "cycle": 1, "address": "$c000", "stage": "opcode", "repeatedRead": true },
+          { "cycle": 2, "address": "$c000", "stage": "opcode", "repeatedRead": true },
+          { "cycle": 3, "address": "$c000", "stage": "opcode", "repeatedRead": true }
+        ]
+      }
+    },
+    {
+      "id": "vic-pal-raster-interrupt",
+      "source": { "type": "local", "description": "Rastervergleich und Register-IRQ auf Zeile 4" },
+      "setup": {
+        "address": "$c000", "program": [76, 0, 192],
+        "registers": [{ "address": "$d012", "value": 4 }, { "address": "$d01a", "value": 1 }]
+      },
+      "run": { "cycles": 253 },
+      "expect": {
+        "vic": { "raster": 4, "cycleInLine": 0, "irqPending": 1, "irqMask": 1 },
+        "clock": { "cycle": 253, "raster": 4, "cycleInLine": 1 },
+        "interrupts": { "irq": true },
+        "registers": [{ "address": "$d012", "value": 4 }]
+      }
+    },
+    {
+      "id": "vic-pal-one-frame",
+      "source": { "type": "local", "description": "PAL-Frameabschluss nach 312 mal 63 Takten" },
+      "setup": { "address": "$c000", "program": [76, 0, 192] },
+      "run": { "cycles": 19656 },
+      "expect": { "vic": { "frameNumber": 1 }, "clock": { "cycle": 19656, "frame": 1, "raster": 0, "cycleInLine": 0 } }
+    },
+    {
+      "id": "original-rom-boot",
+      "kind": "rom-boot",
+      "source": { "type": "external", "description": "Prüfung mit originalen, lokal bereitgestellten ROM-Dateien" },
+      "run": { "maxCycles": 4000000 }
+    }
+  ]
+}

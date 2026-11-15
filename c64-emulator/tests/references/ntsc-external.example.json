@@ -1,0 +1,7 @@
+{
+  "schema": "c64-m9-ntsc-raster-v1",
+  "checkpoints": [
+    { "cycle": 0, "frame": 0, "raster": 0, "cycleInLine": 0 },
+    { "cycle": 17095, "frame": 1, "raster": 0, "cycleInLine": 0 }
+  ]
+}

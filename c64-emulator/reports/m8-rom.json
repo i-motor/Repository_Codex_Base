@@ -1,0 +1,12 @@
+{
+  "schema": "c64-m8-rom-integration-v1",
+  "romDir": "/mnt/data/c64-emulator/rom",
+  "cases": [
+    {
+      "id": "original-rom-integration",
+      "status": "skipped",
+      "reason": "Fehlende ROMs: basic, kernal, chargen"
+    }
+  ],
+  "roms": {}
+}

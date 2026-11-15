@@ -1,0 +1,79 @@
+{
+  "schema": "c64-m9-verification-report-v1",
+  "profiles": [
+    "PAL MOS 6569",
+    "NTSC MOS 6567R8"
+  ],
+  "manifest": "tests/references/m9-local-vectors.json",
+  "cases": [
+    {
+      "id": "pal-and-ntsc-cycle-geometry",
+      "status": "passed",
+      "classification": "local-specification"
+    },
+    {
+      "id": "gcr-fixed-encoding-vector",
+      "status": "passed",
+      "classification": "local-specification"
+    },
+    {
+      "id": "d64-format-geometry",
+      "status": "passed",
+      "classification": "local-specification"
+    },
+    {
+      "id": "native-worker-emulator",
+      "status": "passed",
+      "classification": "node-worker-integration",
+      "output": "Worker-Integration bestanden: 34190 Takte, 2 NTSC-Frames, 128 PCM-Samples"
+    },
+    {
+      "id": "external-d64-directory-and-chains",
+      "status": "skipped",
+      "classification": "external-reference-not-provided",
+      "reason": "Datei fehlt: /home/user/Repository_Codex_Base/c64-emulator/rom/reference.d64"
+    },
+    {
+      "id": "1541-firmware-rom-smoke",
+      "status": "skipped",
+      "classification": "external-reference-not-provided",
+      "reason": "Datei fehlt: /home/user/Repository_Codex_Base/c64-emulator/rom/1541.rom"
+    },
+    {
+      "id": "1541-external-cycle-reference",
+      "status": "skipped",
+      "classification": "external-reference-not-provided",
+      "reason": "Datei fehlt: /home/user/Repository_Codex_Base/c64-emulator/tests/references/1541-external.json"
+    },
+    {
+      "id": "sid-external-audio-reference",
+      "status": "skipped",
+      "classification": "external-reference-not-provided",
+      "reason": "Datei fehlt: /home/user/Repository_Codex_Base/c64-emulator/tests/references/sid-external.json"
+    },
+    {
+      "id": "ntsc-vic-external-raster-reference",
+      "status": "skipped",
+      "classification": "external-reference-not-provided",
+      "reason": "Datei fehlt: /home/user/Repository_Codex_Base/c64-emulator/tests/references/ntsc-external.json"
+    },
+    {
+      "id": "original-c64-rom-boot-and-iec",
+      "status": "failed",
+      "classification": "user-provided-original-rom-integration",
+      "reason": "FAILED original-basic-boot: {\"cycles\":5000000,\"cpu\":{\"A\":0,\"X\":0,\"Y\":8,\"SP\":251,\"PC\":63114,\"P\":34,\"lastOpcode\":32,\"instructionCount\":1309489,\"interruptsServiced\":302,\"sequence\":\"instruction\",\"stage\":\"operand\",\"jammed\":false,\"resetPending\":false},\"frames\":254}\n"
+    },
+    {
+      "id": "firefox-gamepad-and-worker-runtime",
+      "status": "skipped",
+      "classification": "manual-firefox-verification-required",
+      "reason": "Native Firefox-Ausführung benötigt einen manuellen Browsertest"
+    }
+  ],
+  "counts": {
+    "passed": 4,
+    "failed": 1,
+    "skipped": 6,
+    "error": 0
+  }
+}

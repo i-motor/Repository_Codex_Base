@@ -1,0 +1,17 @@
+{
+  "format": "c64-base64-v1",
+  "files": [
+    {
+      "name": "IECDEMO",
+      "type": "prg",
+      "encoding": "base64",
+      "data": "AQgWCAoAmSAiSUVDIERFVklDRSA4IgAAAA=="
+    },
+    {
+      "name": "BORDER",
+      "type": "prg",
+      "encoding": "base64",
+      "data": "AMWpBo0g0GA="
+    }
+  ]
+}

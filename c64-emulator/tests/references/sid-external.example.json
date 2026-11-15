@@ -1,0 +1,9 @@
+{
+  "schema": "c64-m9-sid-samples-v1",
+  "model": "8580",
+  "cpuHz": 985248.44,
+  "writes": [],
+  "checkpoints": [
+    { "cycle": 0, "output": 0, "tolerance": 0.001 }
+  ]
+}
