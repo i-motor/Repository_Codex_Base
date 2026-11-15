@@ -212,16 +212,16 @@ async function loadInitialRoms() {
   const roms = {};
   for (const kind of ['basic', 'kernal', 'chargen']) {
     try {
-      const stored = await store.get(STORES.ROMS, kind);
-      if (stored && validateRom(kind, new Uint8Array(stored)).ok) {
-        roms[kind] = new Uint8Array(stored);
-        continue;
-      }
+      roms[kind] = await loadRomFromUrl(kind, new URL(`../rom/${kind}.rom`, import.meta.url));
+      continue;
     } catch {
       roms[kind] = null;
     }
     try {
-      roms[kind] = await loadRomFromUrl(kind, new URL(`../rom/${kind}.rom`, import.meta.url));
+      const stored = await store.get(STORES.ROMS, kind);
+      if (stored && validateRom(kind, new Uint8Array(stored)).ok) {
+        roms[kind] = new Uint8Array(stored);
+      }
     } catch {
       roms[kind] = null;
     }

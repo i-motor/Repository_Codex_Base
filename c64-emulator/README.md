@@ -29,7 +29,8 @@ Sie sind urheberrechtlich geschützt und deshalb **nicht** enthalten. Möglichke
 2. über die Schaltfläche **ROMs…** auswählen bzw. per Drag & Drop auf das Fenster ziehen.
 
 Geladene ROMs werden geprüft (Größe, CRC32 bekannter Revisionen) und in IndexedDB
-gespeichert, sodass sie nur einmal bereitgestellt werden müssen.
+gespeichert, sodass sie nur einmal bereitgestellt werden müssen. Dateien in `rom/` haben
+beim Start Vorrang vor den gespeicherten Kopien.
 
 ## Bedienung
 
