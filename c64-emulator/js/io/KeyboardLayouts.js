@@ -98,6 +98,9 @@ for (let code = 65; code <= 90; code++) {
 export const SYMBOLIC_KEYS = Object.freeze(SYMBOLS);
 
 export function typingCombo(ch) {
+  if (/^[A-Za-z]$/.test(ch)) {
+    return { key: ch.toUpperCase(), shift: false };
+  }
   const entry = SYMBOLS[ch];
   if (!entry) {
     return null;
