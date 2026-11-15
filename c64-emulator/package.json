@@ -1,0 +1,11 @@
+{
+  "name": "c64-emulator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Hardwareorientierter Commodore-64-Emulator in nativem HTML5/JavaScript",
+  "scripts": {
+    "test": "node --test \"js/tests/**/*.test.js\"",
+    "serve": "python3 -m http.server 8064"
+  }
+}
