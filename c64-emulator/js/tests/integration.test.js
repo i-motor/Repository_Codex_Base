@@ -2,21 +2,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { C64 } from '../core/C64.js';
-import { assemble } from '../utils/Assembler.js';
+import { validateRom } from '../core/ROMManager.js';
+import { makeTestC64 } from './helpers.js';
 import { columnForX, PAL } from '../video/VideoTiming.js';
 import { testDataPath, romPath } from './external/paths.js';
-
-export function makeTestC64(source) {
-  const program = assemble(`* = $e000\n${source}`, 0xe000);
-  const kernal = new Uint8Array(8192);
-  kernal.set(program.bytes.subarray(0, 8192), program.origin - 0xe000);
-  const c64 = new C64();
-  c64.memory.loadRom('kernal', kernal);
-  c64.memory.loadRom('basic', new Uint8Array(8192));
-  c64.memory.loadRom('chargen', new Uint8Array(4096).fill(0xaa));
-  c64.powerOn();
-  return { c64, labels: program.labels };
-}
 
 const VECTORS = `
 * = $fffa
@@ -211,9 +200,10 @@ test('Kaltstart mit Open-ROMs (extern, LGPL) bis READY. und Direktmodus', { skip
 });
 
 const originalRoms = ['basic.rom', 'kernal.rom', 'chargen.rom'].map((name) => romPath(name));
-const hasOriginal = originalRoms.every((file) => existsSync(file));
+const hasOriginal = originalRoms.every((file) => existsSync(file)) &&
+  ['basic', 'kernal', 'chargen'].every((kind, i) => validateRom(kind, readFileSync(originalRoms[i])).known);
 
-test('Kaltstart mit Original-ROMs (lokal bereitgestellt)', { skip: hasOriginal ? false : 'rom/basic.rom, kernal.rom, chargen.rom fehlen' }, () => {
+test('Kaltstart mit Original-ROMs (lokal bereitgestellt)', { skip: hasOriginal ? false : 'Original-ROMs (bekannte CRC32) nicht in rom/ vorhanden' }, () => {
   const c64 = new C64();
   c64.loadRoms({
     basic: readFileSync(originalRoms[0]),

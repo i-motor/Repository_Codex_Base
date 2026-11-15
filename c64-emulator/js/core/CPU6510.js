@@ -249,6 +249,9 @@ export class CPU6502 {
       } else {
         this.intPending = this.nmiPrevRun || this.irqPrevRun;
       }
+      if (this.onInstruction !== null) {
+        this.onInstruction(this.pc);
+      }
     }
   }
 
@@ -294,9 +297,6 @@ export class CPU6502 {
       this.template = T_INT;
       this.t = 1;
       return;
-    }
-    if (this.onInstruction !== null) {
-      this.onInstruction(this.pc);
     }
     const opcode = this.read(this.pc);
     this.pc = (this.pc + 1) & 0xffff;

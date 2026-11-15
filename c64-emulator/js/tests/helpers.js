@@ -1,5 +1,6 @@
 import { CPU6502 } from '../core/CPU6510.js';
 import { assemble } from '../utils/Assembler.js';
+import { C64 } from '../core/C64.js';
 
 export class FlatBus {
   constructor() {
@@ -56,4 +57,16 @@ export function runUntil(cpu, predicate, maxCycles = 1_000_000) {
 
 export function instructionCycles(cpu) {
   return cpu.runInstruction();
+}
+
+export function makeTestC64(source) {
+  const program = assemble(`* = $e000\n${source}`, 0xe000);
+  const kernal = new Uint8Array(8192);
+  kernal.set(program.bytes.subarray(0, 8192), program.origin - 0xe000);
+  const c64 = new C64();
+  c64.memory.loadRom('kernal', kernal);
+  c64.memory.loadRom('basic', new Uint8Array(8192));
+  c64.memory.loadRom('chargen', new Uint8Array(4096).fill(0xaa));
+  c64.powerOn();
+  return { c64, labels: program.labels };
 }
