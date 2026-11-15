@@ -41,19 +41,26 @@ export function validateRom(kind, bytes) {
   };
 }
 
-export function guessRomKind(name, size) {
+export function guessRomKind(name, bytes) {
   const lower = name.toLowerCase();
-  for (const [kind, names] of Object.entries(ROM_FILENAMES)) {
-    if (names.some((candidate) => lower.includes(candidate.split('.')[0]))) {
-      if (ROM_SPECS[kind] === size) {
-        return kind;
-      }
-    }
-  }
+  const size = bytes.length;
   if (size === 4096) {
     return 'chargen';
   }
-  return null;
+  if (size !== 8192) {
+    return null;
+  }
+  if (lower.includes('kern')) {
+    return 'kernal';
+  }
+  if (lower.includes('basic')) {
+    return 'basic';
+  }
+  const signature = String.fromCharCode(...bytes.subarray(4, 12));
+  if (signature === 'CBMBASIC') {
+    return 'basic';
+  }
+  return bytes[0x1ffd] >= 0xe0 ? 'kernal' : 'basic';
 }
 
 export async function loadRomFromUrl(kind, url, fetchImpl = globalThis.fetch) {

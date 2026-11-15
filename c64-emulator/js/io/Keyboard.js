@@ -112,8 +112,23 @@ export class KeyboardMatrix {
 }
 
 export class BrowserKeyboard {
-  constructor(matrix, { layout = 'de', mode = 'symbolic', onRestore = null, joysticks = null } = {}) {
+  constructor(matrix, {
+    layout = 'de',
+    mode = 'symbolic',
+    onRestore = null,
+    joysticks = null,
+    clock = null,
+    scheduler = null,
+    minHoldCycles = 40000,
+    minGapCycles = 25000
+  } = {}) {
     this.matrix = matrix;
+    this.clock = clock;
+    this.scheduler = scheduler;
+    this.minHold = minHoldCycles;
+    this.minGap = minGapCycles;
+    this.held = new Set();
+    this.keyFreeAt = new Map();
     this.layout = layout;
     this.mode = mode;
     this.onRestore = onRestore;
@@ -179,9 +194,12 @@ export class BrowserKeyboard {
       return { key: special[0], shift: special[1] === 'shift' ? true : null };
     }
     if (this.mode === 'symbolic' && event.key && event.key.length === 1) {
+      if (/^[a-z]$/i.test(event.key)) {
+        return { key: event.key.toUpperCase(), shift: !!event.shiftKey };
+      }
       const entry = SYMBOLIC_KEYS[event.key];
       if (entry) {
-        return { key: entry[0], shift: entry[1] === 'shift' ? true : entry[1] === 'noshift' ? false : false };
+        return { key: entry[0], shift: entry[1] === 'shift' };
       }
     }
     const positional = POSITIONAL_LAYOUTS[this.layout] || POSITIONAL_LAYOUTS.us;
@@ -219,8 +237,52 @@ export class BrowserKeyboard {
     if (event.repeat || this.active.has(event.code)) {
       return;
     }
-    this.active.set(event.code, mapping);
-    this.matrix.pressKey(mapping.key);
+    const now = this.now();
+    const pressAt = Math.max(now, this.keyFreeAt.get(mapping.key) || 0);
+    const entry = { mapping, pressAt, pressed: false, releaseRequested: false, timer: null };
+    this.active.set(event.code, entry);
+    if (pressAt <= now || !this.scheduler) {
+      this.pressEntry(entry);
+    } else {
+      entry.timer = this.scheduler.schedule(pressAt - now, () => this.pressEntry(entry));
+    }
+  }
+
+  now() {
+    return this.clock ? this.clock.cycles : 0;
+  }
+
+  pressEntry(entry) {
+    entry.timer = null;
+    entry.pressed = true;
+    entry.pressAt = this.now();
+    this.held.add(entry);
+    this.matrix.pressKey(entry.mapping.key);
+    this.applyShiftOverride();
+    if (entry.releaseRequested) {
+      this.scheduleRelease(entry);
+    }
+  }
+
+  scheduleRelease(entry) {
+    const now = this.now();
+    const releaseAt = this.scheduler ? Math.max(now, entry.pressAt + this.minHold) : now;
+    this.keyFreeAt.set(entry.mapping.key, releaseAt + (this.scheduler ? this.minGap : 0));
+    if (releaseAt <= now) {
+      this.releaseEntry(entry);
+    } else {
+      entry.timer = this.scheduler.schedule(releaseAt - now, () => this.releaseEntry(entry));
+    }
+  }
+
+  releaseEntry(entry) {
+    entry.timer = null;
+    if (!entry.pressed) {
+      return;
+    }
+    entry.pressed = false;
+    this.held.delete(entry);
+    this.matrix.releaseKey(entry.mapping.key);
     this.applyShiftOverride();
   }
 
@@ -233,28 +295,38 @@ export class BrowserKeyboard {
         return;
       }
     }
-    const mapping = this.active.get(event.code);
-    if (!mapping) {
+    const entry = this.active.get(event.code);
+    if (!entry) {
       return;
     }
     event.preventDefault();
     this.active.delete(event.code);
-    this.matrix.releaseKey(mapping.key);
-    this.applyShiftOverride();
+    entry.releaseRequested = true;
+    if (entry.pressed) {
+      this.scheduleRelease(entry);
+    }
   }
 
   applyShiftOverride() {
     let override = null;
-    for (const mapping of this.active.values()) {
-      if (mapping.shift !== null) {
-        override = mapping.shift;
+    for (const entry of this.held) {
+      if (entry.mapping.shift !== null) {
+        override = entry.mapping.shift;
       }
     }
     this.matrix.setShiftOverride(override);
   }
 
   releaseAll() {
+    for (const entry of [...this.active.values(), ...this.held]) {
+      if (entry.timer && this.scheduler) {
+        this.scheduler.cancel(entry.timer);
+      }
+      entry.timer = null;
+    }
     this.active.clear();
+    this.held.clear();
+    this.keyFreeAt.clear();
     this.matrix.releaseAll();
     if (this.joysticks) {
       this.joysticks.releaseAll();

@@ -12,7 +12,9 @@ import { CIA6526 } from '../io/CIA6526.js';
 import { KeyboardMatrix, KeyboardTyper } from '../io/Keyboard.js';
 import { Joysticks } from '../io/Joystick.js';
 import { IECBus } from '../io/IECBus.js';
+import { VirtualDrive1541 } from '../storage/VirtualDrive1541.js';
 import { IRQ_SOURCE, NMI_SOURCE } from '../utils/Constants.js';
+import { Debugger } from '../utils/Debugger.js';
 
 export class C64 {
   constructor({ timing = PAL, sidModel = '6581', ciaModel = '6526', sampleRate = 48000 } = {}) {
@@ -47,6 +49,8 @@ export class C64 {
     this.breakRequested = false;
     this.breakReason = null;
     this.drives = [];
+    this.drive8 = new VirtualDrive1541({ bus: this.iec, scheduler: this, deviceNumber: 8 });
+    this.debugger = new Debugger(this);
     this.wireCia1();
     this.wireCia2();
     this.vic.onFrame = () => this.onVicFrame();
@@ -261,19 +265,7 @@ export class C64 {
   }
 
   setBreakpoint(address, enabled = true) {
-    if (enabled) {
-      this.breakpoints.add(address & 0xffff);
-    } else {
-      this.breakpoints.delete(address & 0xffff);
-    }
-    this.cpu.onInstruction = this.breakpoints.size
-      ? (pc) => {
-        if (this.breakpoints.has(pc)) {
-          this.breakRequested = true;
-          this.breakReason = { type: 'breakpoint', address: pc };
-        }
-      }
-      : null;
+    this.debugger.setBreakpoint(address, enabled);
   }
 
   requestBreak(reason = 'user') {

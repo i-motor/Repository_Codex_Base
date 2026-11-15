@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C64-Emulator</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header id="toolbar">
+<button id="btn-roms" title="basic.rom, kernal.rom und chargen.rom auswählen">ROMs…</button>
+<button id="btn-load" title="PRG, D64, P00, BAS-Text oder Base64-Container auf die virtuelle Diskette legen">Datei…</button>
+<select id="disk-files" title="Dateien auf Laufwerk 8"></select>
+<button id="btn-download-prg" title="Gewählte Datei als PRG herunterladen">PRG ↓</button>
+<button id="btn-export" title="Alle Dateien als Base64-Container exportieren">Base64 ↓</button>
+<button id="btn-export-d64" title="Diskette als D64 exportieren">D64 ↓</button>
+<button id="btn-new-disk" title="Leere virtuelle Diskette einlegen">Neue Disk</button>
+<button id="btn-reset" title="RESET-Leitung (Warmstart)">Reset</button>
+<button id="btn-power" title="Aus- und Einschalten (Kaltstart)">Ein/Aus</button>
+<button id="btn-restore" title="RESTORE-Taste (auch Bild↑)">RESTORE</button>
+<button id="btn-audio" title="Tonausgabe starten oder stummschalten">Ton an</button>
+<label><input type="checkbox" id="chk-warp"> Warp</label>
+<label>Joystick <select id="sel-port"><option value="2">Port 2</option><option value="1">Port 1</option></select></label>
+<label>Maus <select id="sel-mouse"><option value="position">Position</option><option value="relative">relativ</option><option value="off">aus</option></select></label>
+<label>Tastatur <select id="sel-keyboard"><option value="symbolic-de">symbolisch</option><option value="positional-de">positionell DE</option><option value="positional-us">positionell US</option></select></label>
+<label><input type="checkbox" id="chk-numpad"> Numpad-Joystick</label>
+<label>Bild <select id="sel-crop"><option value="normal">normal</option><option value="full">voll</option></select></label>
+<label><input type="checkbox" id="chk-integer"> ganzzahlig</label>
+<label><input type="checkbox" id="chk-aspect"> PAL-Pixel</label>
+<label>SID <select id="sel-sid"><option value="6581">6581</option><option value="8580">8580</option></select></label>
+<label><input type="checkbox" id="chk-autostart" checked> Autostart</label>
+<span id="status"></span>
+</header>
+<canvas id="screen" tabindex="0"></canvas>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
