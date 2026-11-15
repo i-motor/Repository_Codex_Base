@@ -316,19 +316,19 @@ function autostart(name) {
   c64.keyboard.releaseAll();
   c64.typeText(`LOAD"${name}",8,1\r`);
   const start = performance.now();
-  let sawActivity = false;
+  const transfers = c64.drive8.transferCount;
   autostartWatch = () => {
-    if (c64.typer.busy) {
-      return false;
-    }
-    if (c64.drive8.state !== 0) {
-      sawActivity = true;
-      return false;
+    if (c64.typer.busy || c64.drive8.transferCount === transfers || c64.drive8.state !== 0) {
+      return performance.now() - start > 600000;
     }
     const screen = c64.readScreenText();
-    const lastLines = screen.slice(-6).join('\n');
-    if (sawActivity && /READY\./.test(lastLines)) {
-      if (/ERROR/.test(lastLines)) {
+    let loadLine = -1;
+    screen.forEach((line, index) => {
+      if (line.startsWith('LOAD"')) loadLine = index;
+    });
+    const after = screen.slice(loadLine + 1).join('\n');
+    if (/READY\./.test(after)) {
+      if (/ERROR/.test(after)) {
         setMessage('Autostart: Laden fehlgeschlagen');
       } else {
         c64.typeText('RUN\r');

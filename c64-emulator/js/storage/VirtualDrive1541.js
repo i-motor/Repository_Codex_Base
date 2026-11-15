@@ -110,6 +110,7 @@ export class VirtualDrive1541 {
     this.id = bus.attach(this);
     this.activityListener = null;
     this.log = null;
+    this.transferCount = 0;
     this.reset();
   }
 
@@ -327,6 +328,7 @@ export class VirtualDrive1541 {
   }
 
   acknowledgeByte() {
+    this.transferCount++;
     this.setLines(false, true);
     const value = this.rxValue;
     const eoi = this.rxEoi;
@@ -681,6 +683,7 @@ export class VirtualDrive1541 {
   }
 
   byteAcknowledged() {
+    this.transferCount++;
     this.advanceTalk();
     if (this.txEoi) {
       this.state = S.IDLE;

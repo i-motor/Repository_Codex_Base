@@ -126,13 +126,16 @@ loadRoms({ basic, kernal, chargen })          Uint8Array je ROM, validiert durch
 powerOn()                                     Kaltstart: RAM-Muster, alle Chips Reset, CPU-Reset
 reset()                                       Warmstart: RESET-Leitung, RAM bleibt erhalten
 cycle()                                       genau ein Systemtakt
-runCycles(n) → ausgeführte Takte              bricht bei Haltepunkt/JAM ab
+runCycles(n) → ausgeführte Takte              bricht bei Haltepunkt ab
+schedule(delay, fn) / cancel(event)           taktgenaue Ereignisplanung (RESTORE-Monoflop,
+                                              IEC-Gerät, Tastatur-Haltezeiten)
+typeText(text), readScreenText()              Matrix-Tipp-Automat bzw. Bildschirmauszug (Tests)
 runFrame() → ausgeführte Takte                bis zum nächsten Rahmenende des VIC-II
 pressRestore() / releaseRestore()             RESTORE über monostabile Stufe auf NMI
 setAudioSink(fn(Float32Array))                Ziel für erzeugte Audioblöcke
 flushAudio()                                  SID bis zum aktuellen Takt nachführen
-Felder: clock, cpu, memory, bus, interrupts, vic, sid, cia1, cia2,
-        keyboard, joysticks, iec, drive8, debugger
+Felder: clock, cpu, memory, bus, port, interrupts, vic, sid, cia1, cia2,
+        keyboard, typer, joysticks, iec, drive8, debugger
 ```
 
 ### 3.2 core/CPU6510.js – `class CPU6502`, `class CPU6510`
@@ -354,8 +357,11 @@ KeyboardMatrix
   setShiftOverride(null | true | false)
   resolve(paDriven, pbDriven, extA, extB) → { pa, pb }   Wired-AND über gedrückte Kontakte
 BrowserKeyboard
-  constructor(matrix, { layout:'de'|'us', mode:'symbolic'|'positional', onRestore })
+  constructor(matrix, { layout:'de'|'us', mode:'symbolic'|'positional', onRestore,
+                        clock, scheduler, minHoldCycles, minGapCycles })
   attach(target) / detach()
+  Kurze Browser-Anschläge werden in emulierter Zeit auf eine Mindesthaltezeit (≈ 40 ms)
+  und Mindestpause verlängert, damit die KERNAL-Abfrage (60 Hz) jeden Anschlag sieht.
 KeyboardTyper                     tippt Text über die Matrix (Autostart, Tests)
 ```
 
@@ -522,6 +528,12 @@ spart aber Funktionsaufrufe. Am Ende jeder Emulationsscheibe wird ebenfalls nach
 * Verspätete oder ausgelassene `requestAnimationFrame`-Aufrufe ändern nichts an der
   Emulation; es wird lediglich ein Bild nicht gezeigt.
 * Warp-Modus: Scheduler emuliert so schnell wie möglich; Audio wird währenddessen verworfen.
+* Threading: Der Emulationskern läuft bewusst im Hauptthread. Er erreicht in Messungen
+  ein Vielfaches der Echtzeit, der Audiopuffer (≈ 80 ms) überbrückt Präsentationsschwankungen,
+  und Registerlesezugriffe auf den SID (OSC3/ENV3) bleiben ohne Thread-Synchronisation
+  exakt. Da der Kern keine DOM-Abhängigkeiten hat, kann er später in einen Web Worker
+  verlagert werden (Framebuffer per Transfer, Eingaben per Nachricht, Audio direkt per
+  MessagePort an den Worklet).
 
 ---
 
@@ -681,11 +693,14 @@ gamepad poll  ─► GamepadJoystick ──────────────�
 
 ## 9. CIA-Detailmodell
 
-* Timer als Zustandsvektor mit Verzögerungsstufen (Count0→Count1→Count2→Count3,
-  Load0→Load1, OneShot0→OneShot1), angelehnt an das in VICE/libsidplayfp verifizierte Modell:
-  Start wirkt nach zwei Takten, Force-Load nach einem Takt, Unterlauf lädt aus dem Latch
-  und setzt ICR-Bit, One-Shot stoppt den Timer.
-* Timer B zählt φ2, CNT-Flanken, Timer-A-Unterläufe oder Unterläufe bei CNT high.
+* Timer als Zustandsautomat (STOP, WAIT_THEN_COUNT, LOAD_THEN_STOP, LOAD_THEN_COUNT,
+  LOAD_THEN_WAIT_THEN_COUNT, COUNT, COUNT_THEN_STOP) nach dem Modell von Frodo SC:
+  Ein Schreibzugriff auf CRA/CRB wird im folgenden CIA-Takt übernommen; die erste
+  Dekrementierung erfolgt im dritten Takt nach dem Startbefehl, Force-Load wirkt nach einem
+  Takt. Beim Unterlauf wird aus dem Latch geladen, das ICR-Bit sofort gesetzt und ein Takt
+  Pause eingelegt (Periode N+1); One-Shot stoppt den Timer.
+* Timer B zählt φ2, CNT-Flanken, Timer-A-Unterläufe (im selben Takt) oder Unterläufe bei
+  CNT high.
 * PB6/PB7-Ausgabe (Puls/Toggle) bei gesetztem PBON.
 * TOD: BCD-Uhr mit Zehnteln, Sekunden, Minuten, Stunden (12 h + PM), 50/60-Hz-Teiler
   nach CRA-Bit 7, Latch beim Lesen, Halt beim Schreiben, Alarm über CRB-Bit 7.
